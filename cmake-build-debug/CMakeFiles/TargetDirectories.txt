@@ -1,0 +1,3 @@
+/home/pedro/dev/CLionProjects/frontieres/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/pedro/dev/CLionProjects/frontieres/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/pedro/dev/CLionProjects/frontieres/cmake-build-debug/CMakeFiles/frontieres.dir
