@@ -1,110 +1,79 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
-#include <math.h>
-
 
 #include "structures.h"
-#include "main.c"
 
-#define MAX 100000   // on établie une majoration pour ne surcharger ni dépasser le programme
+//FIXME: Translate to french
+void read_country_data(int* npolys, Polygone** polys, const char *f) {
+    FILE *file;
+    int i, j;
 
+    file = fopen(f, "r");  // "r" = read file
 
+    //FIXME: We read the number of polygons (patches that form the country)
+    fscanf(file, "%d\n", npolys);
 
+    *polys = malloc(sizeof(Polygone) * *npolys);
 
+    for(i = 0; i < *npolys; ++i) {
+        int nbpoints;
+        //FIXME: Read one polygon
+        Polygone* currentPoly = &((*polys)[i]);
 
-// on va lire un fichier avec les coordonnées (x,y) de points composant le polygone
-// ce fichier comportera seulement deux colonnes (comme une matrice), qui définiront une liste enchaînée (chaque point sera relié aux suivant et définira en conséquence les côtés du polygone)
+        fscanf(file, "%d\n", &nbpoints);
 
-void initialize_polygone(Noeud *poly) // la fct malloc sert à allouer de l'espace, et void ne retourne aucun résultat
-{
-     // avec la flèche on accède à l'adresse
-        poly->nbpoints = 0;
-        poly->vert = NULL;
-}
+        initialize_polygone(currentPoly, nbpoints);
 
-
-// on libère la mémoire pour ne la surcharger pas
-void dispose_polygone(Noeud *poly)
-{
-        free(nbpoints);
-        free(poly->vert);
-}
-
-
-void write_poly(Noeud *poly, const char* f)
-{
-     FILE *file = NULL;
-     file = fopen(f,"w"); // write
-
-	int i = 0;
-	double x,y;
-
-	while (i<=(poly->nbpoints))
-	{
-		x = poly->vert[i].x;
-		y = poly->vert[i].y;
-		fprintf(file, "%lf %lf\n",x,y);
-		i++;
-	}
-
-
-	fclose(file);
-
-}
-
-
-
-void read_polygon(Noeud *poly, const char* f)
-{
-        FILE *file;
-        file = fopen(f,"r");  // "r" = read file
-
-        // compteurs basiques
-        int i = 0;
-        int j = 0;
-
-        // compteur nb points du polygone
-        int point = 0;
-        double pointsx[MAX];
-        double pointsy[MAX];
-
-
-
-
-        // on lit d'abord le nb de points qui définiront le polygon et on les trie en deux tableaux
-        while (i <= MAX)
-        for (point=0; point<MAX; point++)
-        {
-               fscanf(file, "%lf %lf", &pointsx[point], &pointsy[point]);
+        for(j = 0; j < nbpoints; ++j) {
+            double x, y;
+            fscanf(file, "%lf,%lf\n", &x, &y);
+            currentPoly->vert[j].x = x;
+            currentPoly->vert[j].y = y;
         }
+    }
 
-        poly->vert = malloc(sizeof(Vertex)*point); // la fct malloc sert à allouer de l'espace, et void ne retourne aucun résultat
-        poly->nbpoints = point;
-        poly->nbcotes = point;
-
-        for (i=0; i<=point; i++)
-        {
-               poly->vert[i].x = pointsx[i];
-               poly->vert[i].y = pointsy[i];
-        }
-
-
-        fclose(file);
-
+    fclose(file);
 }
 
-
-
-
-int main(int argc, char **argv)
+//FIXME: Translate
+int is_point_in_country(int npolys, Polygone* polys, double longitude, double latitude)
 {
-     Noeud poly;
-     Vertex vert;
+    int i;
+    Vertex point;
+    point.x = longitude;
+    point.y = latitude;
 
-     initialize_polygon(&poly, f);
-     read_polygon(&poly, argv[]);
+    for(i = 0; i < npolys; i++) {
+        if(is_point_inside_polygon(&polys[i], &point)) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
+int main(int argc, char **argv) {
+    Polygone* polys;
+    int npolys, i;
+    double longitude, latitude;
 
+    read_country_data(&npolys, &polys, "../spain_country_data.data");
 
+    //FIXME: Translate
+    printf("Let's check if a point is inside Spanish territory. \nEnter a longitude: ");
+    scanf("%lf", &longitude);
+    printf("Enter a latitude: ");
+    scanf("%lf", &latitude);
+
+    if(is_point_in_country(npolys, polys, longitude, latitude)) {
+        printf("The point %lf, %lf *IS* inside the country \n", longitude, latitude);
+    } else {
+        printf("The point %lf, %lf is *NOT* inside the country \n", longitude, latitude);
+    }
+
+    for(i = 0; i < npolys; i++) {
+        dispose_polygone(&polys[i]);
+    }
+
+    free(polys);
+    return 0;
 }
